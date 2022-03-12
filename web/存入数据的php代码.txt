@@ -1,0 +1,91 @@
+function newlist_num(){
+		$tiao=0;
+        $offset=0;
+        $num=1;
+        $cf = new commonFunction();
+        while($num){
+                $num++;
+                $url='http://172.17.226.89/func/web_main/api/maf/maf_addrfilter/maf_addrfilter/mafcustomv4wblist?offset='.$offset.'&count=100';
+                $action = 'GET';
+                $headers=array("Accept: application/json","Content-Type: application/json","Authorization: Basic YWRtaW46Skp5aF9FRFNAV2g5NjIwMg==");
+                $data = '';
+                $res = $cf->callInterfaceCommon($url,$action,$data,$headers);
+                $arr=json_decode($res);
+                $tiao=count($arr->mafcustomv4wblist)+$tiao;
+                #print(count($arr->mafcustomv4wblist));
+                if(count($arr->mafcustomv4wblist)<100){
+
+                        return $tiao;
+                }
+
+                $offset=$offset+100;
+
+         }
+
+}
+
+
+
+
+
+
+function newlist(){
+	$tiao=0;
+	$mysql=new mysqli();
+	$mysql->connect("localhost","root","hw_zhuanyong@changting","fuck");
+	$mysql->set_charset("utf8");
+    $offset=0;
+    $num=1;
+    $cf = new commonFunction();
+    $sql_one="SELECT * FROM date";
+    $result_a=$mysql->query($sql_one);
+    $date_nums=$result_a->num_rows;
+
+    $Neweds_date=newlist_num();
+
+
+ // 
+
+     if($Neweds_date==$date_nums){
+       	echo "数据无需变动！";
+
+     }else{
+     	echo "数据需要变动<br>";
+        	//需要去重复
+ 		 
+ 		//$add_list=$Neweds_date-$date_nums;
+
+
+	    while($num){
+	        $num++;
+	       
+	        $url='http://172.17.226.89/func/web_main/api/maf/maf_addrfilter/maf_addrfilter/mafcustomv4wblist?offset='.$offset.'&count=100';
+	        $action = 'GET';
+	        $headers=array("Accept: application/json","Content-Type: application/json","Authorization: Basic YWRtaW46Skp5aF9FRFNAV2g5NjIwMg==");
+	        $data = '';
+	        $res = $cf->callInterfaceCommon($url,$action,$data,$headers);
+	        $arr=json_decode($res);
+	 		$tiao=$tiao+count($arr->mafcustomv4wblist);
+			foreach($arr->mafcustomv4wblist as $val){
+				$sql1='INSERT INTO date(DbId,IPaddr,ModRecord)VALUES("'.$val->DbId.'","'.$val->IPaddr.'","'.$val->ModRecord.'")';
+	   			$result1=$mysql->query($sql1);
+				// print_r($val);
+				// echo '<br>';
+			}
+	        
+	        if(count($arr->mafcustomv4wblist)<100){
+					return $tiao;
+	        }
+
+	        $offset=$offset+100;
+
+	         }
+
+      }
+
+
+
+
+}
+
+newlist();
